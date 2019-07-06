@@ -6,8 +6,8 @@ public class UIBossPreviewWarningWindow : MonoBehaviour
 {
     [SerializeField] private UIBossConfigView _bossConfigView;
 
-    private void Start()
+    public void ApplyBossConfig(BossConfig config)
     {
-        _bossConfigView.Apply("test","test",null);
+        _bossConfigView.Apply(config.Name,config.Description,config.Icon);
     }
 }
