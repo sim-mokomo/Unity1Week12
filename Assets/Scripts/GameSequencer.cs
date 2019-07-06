@@ -2,25 +2,48 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum GameSequence
+{
+    BossPreview,
+    Shop,
+}
+
 public class GameSequencer : MonoBehaviour
 {
     [SerializeField] private UIBossPreviewWarningWindow _uiBossPreviewWarningWindow;
+    [SerializeField] private UIShopWindow _uiShopWindow;
     [SerializeField] private WaveSequencer _waveSequencer;
 
     private void Start()
     {
-        var wave = _waveSequencer.FetchCurrentWave();
-        _uiBossPreviewWarningWindow.ApplyBossConfig(wave.BossConfig);
-        _waveSequencer.MoveNextWave();
+        UpdateUIActivate(GameSequence.BossPreview);
+        _uiBossPreviewWarningWindow.ApplyBossConfig(_waveSequencer.FetchCurrentWave().BossConfig);
+
+        _uiBossPreviewWarningWindow.OnNextSequence += () =>
+        {
+            UpdateUIActivate(GameSequence.Shop);
+        };
+
+        _uiShopWindow.OnNextSequence += () =>
+        {
+            UpdateUIActivate(GameSequence.BossPreview);
+            _waveSequencer.MoveNextWave();
+            _uiBossPreviewWarningWindow.ApplyBossConfig(_waveSequencer.FetchCurrentWave().BossConfig);   
+        };
     }
 
-    private void Update()
+    private void UpdateUIActivate(GameSequence gameSequence)
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        switch (gameSequence)
         {
-            var wave = _waveSequencer.FetchCurrentWave();
-            _uiBossPreviewWarningWindow.ApplyBossConfig(wave.BossConfig);
-            _waveSequencer.MoveNextWave();            
+                case GameSequence.BossPreview :
+                    _uiBossPreviewWarningWindow.gameObject.SetActive(true);
+                    _uiShopWindow.gameObject.SetActive(false);
+                    break;
+                case GameSequence.Shop:
+                    _uiBossPreviewWarningWindow.gameObject.SetActive(false);
+                    _uiShopWindow.gameObject.SetActive(true);
+                    break;
         }
     }
 }
